@@ -1,0 +1,24 @@
+---
+title: "Spiders"
+author: "Miles Ott"
+date: "12/10/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+spiders <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-07/spiders.csv')
+
+```
+
+
+
+```{r}
+spiders%>%
+  group_by(year)%>%
+  summarise(number=n())%>%
+  ggplot(aes(x=year, y=number))+geom_line()
+```
+
