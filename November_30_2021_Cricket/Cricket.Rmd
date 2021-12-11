@@ -1,0 +1,50 @@
+---
+title: "Cricket"
+author: "Miles Ott"
+date: "12/11/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+library(tidyverse)
+library(GGally)
+
+matches <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-30/matches.csv')
+
+```
+
+
+```{r}
+#ordering matches alphabetically
+
+for (i in 1: dim(matches)[1]){
+  if (matches$team1[i] > matches$team2[i]) {
+    first = matches$team2[i]
+    second = matches$team1[i]
+    matches$team1[i]<-first
+    matches$team2[i]<-second
+  }
+      
+}
+
+#ceating edge list with weights
+game.n<-matches%>%
+  group_by(team1, team2)%>%
+  summarise(weights=n()/15)
+
+#converting to a network objecct
+game.net<-as.network(game.n,directed =FALSE)
+
+#saving plot
+png(filename="Cricket.png", width =4, height =4, units ="in", res=400)
+
+ggnet2(net=game.net,color="green", edge.size="weights")+
+  ggtitle("Network of Cricket Matches")+
+  theme(panel.background = element_rect(fill = "grey15"))
+
+dev.off()
+```
+
