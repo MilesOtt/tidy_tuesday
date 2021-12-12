@@ -1,0 +1,82 @@
+---
+title: "Pumpkins"
+author: "Miles Ott"
+date: "12/12/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+library(tidyverse)
+library(ggExtra)
+
+pumpkins <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-19/pumpkins.csv')
+
+#cleaning up the data a little bit
+pumpkins<- pumpkins%>%
+  mutate(
+    year = as.Date(substr(id, 1,4), format ="%Y"),
+    weight = as.numeric(weight_lbs),
+    ott = as.numeric(ott),
+    type = substr(id, 6,6),
+    type = ifelse (type =="F", "Field Pumpkin", 
+                   ifelse(type=="P", "Giant Pumpkin", 
+                          ifelse(type == "S", "Giant Squash",
+                                 ifelse(type == "W", "Giant Watermelon",
+                                        ifelse(type == "L", "Long Gourd", "Tomato")))))
+  )
+
+```
+
+```{r}
+
+pumpkins%>%
+  group_by(year, type)%>%
+  summarise( avg.weight =mean(weight, na.rm=TRUE),
+             count = n())%>%
+  ggplot(aes(x=year, y=avg.weight, col=type))+geom_line()
+
+pumpkins%>%
+  group_by(year, type)%>%
+  summarise( avg.weight =mean(weight, na.rm=TRUE),
+             count = n())%>%
+  ggplot(aes(x=year, y=count, col=type))+geom_line()
+  
+```
+
+
+```{r}
+
+pumpkins%>%
+  filter(ott >0)%>%
+  ggplot(aes(x=ott, fill=type))+geom_boxplot(alpha=1)
+
+pumpkins%>%
+  filter(ott>0 & weight>0)%>%
+  ggplot( aes(x=ott, y=weight, col=type))+geom_point(alpha=.2)
+
+```
+
+
+
+
+```{r}
+g<-pumpkins%>%
+  filter(ott>0 & weight>0 & ott<600)%>%
+  ggplot( aes(x=ott, y=weight, color = type)) +
+  geom_point(alpha=.3)+
+  guides(color=guide_legend(title="Type of Pumpkin"))+
+  theme_bw()+
+  theme(
+    legend.position="left")+
+  xlab("Over the top (inches)")+
+  ylab("weight (lbs)")
+g
+
+png("pumpkin_plot.png", width =8, height =4, units ="in", res=400)
+ggMarginal(g, groupColour = TRUE, groupFill = TRUE)
+dev.off()
+```
+
