@@ -1,0 +1,75 @@
+---
+title: "Spice Up Your Life"
+author: "Miles Ott"
+date: "12/13/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+install.packages("remotes")
+remotes::install_github("coolbutuseless/ggpattern")
+
+library(tidyverse)
+library(ggridges)
+library(ggpattern)
+
+studio_album_tracks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-14/studio_album_tracks.csv')
+
+
+lyrics <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-14/lyrics.csv')
+
+
+```
+
+
+
+I want to make a variable for each member and an indicator of if they are featured in that line of the lyrics
+
+```{r}
+lyrics<-lyrics %>%
+  mutate(
+    baby = ifelse(grepl("Baby", section_artist, fixed=TRUE),1,0),
+    sporty = ifelse(grepl("Sporty", section_artist, fixed=TRUE), 1, 0),
+    mel_b = ifelse(grepl("Scary", section_artist, fixed=TRUE), 1, 0),
+    posh = ifelse(grepl("Posh", section_artist, fixed=TRUE), 1, 0),
+    ginger = ifelse(grepl("Ginger", section_artist, fixed=TRUE), 1, 0)
+)
+
+
+```
+
+OK I want to find the percent of lines in which each spice girl is featured for each song 
+
+```{r}
+song_lyrics<-lyrics%>%
+  group_by(song_name)%>%
+  summarise(
+    album = album_name[1],
+    proportion_baby = mean(baby),
+    proportion_sporty = mean(sporty),
+    proportion_mel_b = mean(mel_b),
+    proportion_posh = mean(posh),
+    proportion_ginger = mean(ginger)
+  )
+
+```
+
+
+ggridges tutorial helped me here :) https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html
+
+```{r}
+
+png("December_14_2021_Spice_Girls/Mel_B_Density.png", width =6, height =3, units="in", res=400)
+ggplot(song_lyrics, aes(x = proportion_mel_b, y = album, fill = stat(x))) +
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+  scale_fill_viridis_c(name = "Proportion\nMel B")+
+  labs(title = 'How Mel B Was Each Spice Girls Album?')+
+  theme_bw()+
+  ylab("Album")+
+  xlab("Proportion of Song Sections Featuring Mel B")
+dev.off()
+```
+
