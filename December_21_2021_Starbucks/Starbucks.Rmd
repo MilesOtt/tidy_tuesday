@@ -1,0 +1,58 @@
+---
+title: "Spice Up Your Life"
+author: "Miles Ott"
+date: "12/13/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+library(ggimage)
+library(tidyverse)
+library(ggridges)
+library(ggpattern)
+
+starbucks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-21/starbucks.csv')
+
+
+
+```
+
+
+
+I want to focus on Chai Maybe?
+
+```{r}
+chai<-starbucks%>%
+  filter(str_detect(product_name, "Chai"))
+
+image = rep("https://stories.starbucks.com/wp-content/uploads/2019/01/Teavana_Pumpkin_Spice_Chai_resize.jpg",8)
+
+chai<-cbind(chai, image)
+
+g<-chai%>%
+  group_by(product_name)%>%
+  summarise(max_sugar = max(sugar_g), 
+            max_caf = max(caffeine_mg))%>%
+  ggplot(aes(max_sugar, max_caf)) + geom_image(aes(image=image), size=.1)+
+ # geom_text(aes(label=product_name))+
+   theme_bw()+
+  ylab("Caffeine (mg)")+
+  xlab("Sugar (g)")+
+  labs(title = 'Chai Energy Beverages')
+
+
+```
+
+
+
+```{r}
+
+png("December_21_2021_Starbucks/Chai.png", width =4, height =3, units="in", res=400)
+g
+
+dev.off()
+```
+
